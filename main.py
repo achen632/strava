@@ -73,7 +73,7 @@ def refresh_tokens():
     else:
         print("Failed to refresh tokens:", response.status_code, response.text)
 
-def get_activities():
+def get_activities(num_activities=10):
     # Load environment variables
     load_dotenv()
     access_token = os.getenv('ACCESS_TOKEN')
@@ -81,7 +81,7 @@ def get_activities():
     # Make get request
     url = "https://www.strava.com/api/v3/athlete/activities"
     headers = {'Authorization': f'Bearer {access_token}'}
-    params = {'page': 1, 'per_page': 10}
+    params = {'page': 1, 'per_page': num_activities}
     response = requests.get(url, headers=headers, params=params)
 
     if response.status_code != 200:
