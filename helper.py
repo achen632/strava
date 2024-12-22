@@ -89,8 +89,3 @@ def get_activities(num_activities=10):
         print(response.json())
         return None
     return response.json()
-
-if __name__ == "__main__":
-    activities = get_activities()
-    for i, x in enumerate(activities):
-        print(f"{i+1:<5} {x['name']:<40} {x['id']}")
