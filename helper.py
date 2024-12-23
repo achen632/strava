@@ -35,9 +35,6 @@ def get_tokens():
     set_key('.env', 'ACCESS_TOKEN', session.token['access_token'])
     set_key('.env', 'REFRESH_TOKEN', session.token['refresh_token'])
 
-    print(f"Access Token: {session.token['access_token']}")
-    print(f"Refresh Token: {session.token['refresh_token']}")
-
 def refresh_tokens():
     # Load environment variables
     load_dotenv()
@@ -62,8 +59,10 @@ def refresh_tokens():
     if response.status_code == 200:
         # Parse the response
         tokens = response.json()
-        new_access_token = tokens['access_token']
         new_refresh_token = tokens['refresh_token']
+        if new_refresh_token == refresh_token:
+            return
+        new_access_token = tokens['access_token']
 
         # Update the .env file
         set_key('.env', 'ACCESS_TOKEN', new_access_token)
@@ -75,6 +74,7 @@ def refresh_tokens():
 
 def get_activities(num_activities=10):
     # Load environment variables
+    refresh_tokens()
     load_dotenv()
     access_token = os.getenv('ACCESS_TOKEN')
 
@@ -84,6 +84,7 @@ def get_activities(num_activities=10):
     params = {'page': 1, 'per_page': num_activities}
     response = requests.get(url, headers=headers, params=params)
 
+    # If error, refresh tokens and try again
     if response.status_code != 200:
         print(f"Error: {response.status_code}")
         print(response.json())
