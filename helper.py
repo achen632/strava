@@ -3,7 +3,7 @@ import requests
 from dotenv import load_dotenv, set_key
 import os
 
-# Retrieves auth tokens from Strava after user authorization
+# Retrieve auth tokens from Strava after user authorization
 def get_tokens():
     # Load environment variables
     load_dotenv()
@@ -35,6 +35,7 @@ def get_tokens():
     set_key('.env', 'ACCESS_TOKEN', session.token['access_token'])
     set_key('.env', 'REFRESH_TOKEN', session.token['refresh_token'])
 
+# Refresh tokens
 def refresh_tokens():
     # Load environment variables
     load_dotenv()
@@ -42,10 +43,8 @@ def refresh_tokens():
     client_secret = os.getenv('CLIENT_SECRET')
     refresh_token = os.getenv('REFRESH_TOKEN')
 
-    # Token endpoint
+    # POST request
     token_url = "https://www.strava.com/api/v3/oauth/token"
-
-    # Make the POST request to refresh the token
     response = requests.post(
         token_url,
         data={
@@ -57,36 +56,31 @@ def refresh_tokens():
     )
 
     if response.status_code == 200:
-        # Parse the response
         tokens = response.json()
         new_refresh_token = tokens['refresh_token']
         if new_refresh_token == refresh_token:
-            return
+            return # No need to update
         new_access_token = tokens['access_token']
 
         # Update the .env file
         set_key('.env', 'ACCESS_TOKEN', new_access_token)
         set_key('.env', 'REFRESH_TOKEN', new_refresh_token)
 
-        print("Tokens refreshed successfully!")
+        print("Refreshed tokens")
     else:
         print("Failed to refresh tokens:", response.status_code, response.text)
 
+# Return JSON of user's activities
 def get_activities(num_activities=10):
     # Load environment variables
     refresh_tokens()
     load_dotenv()
     access_token = os.getenv('ACCESS_TOKEN')
 
-    # Make get request
+    # GET request
     url = "https://www.strava.com/api/v3/athlete/activities"
     headers = {'Authorization': f'Bearer {access_token}'}
     params = {'page': 1, 'per_page': num_activities}
     response = requests.get(url, headers=headers, params=params)
 
-    # If error, refresh tokens and try again
-    if response.status_code != 200:
-        print(f"Error: {response.status_code}")
-        print(response.json())
-        return None
     return response.json()
